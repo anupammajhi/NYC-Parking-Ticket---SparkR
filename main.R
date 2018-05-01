@@ -57,3 +57,60 @@ NYCParking_2017_sample_R <- collect(NYCParking_2017_sample)
 
 sapply(NYCParking_2015_sample_R, function(x) sum(is.na(x)))
 sapply(NYCParking_2016_sample_R, function(x) sum(is.na(x)))
+sapply(NYCParking_2017_sample_R, function(x) sum(is.na(x)))
+
+# We can see that columns from 'No Standing or Stopping Violation' are empty in all three datasets.
+# Therefore, we need to remove them
+# Hence we will only use columns 1 to 40
+
+NYCParking_2015 <- NYCParking_2015[,1:40]
+columns(NYCParking_2015)
+
+NYCParking_2016 <- NYCParking_2016[,1:40]
+columns(NYCParking_2016)
+
+NYCParking_2017 <- NYCParking_2017[,1:40]
+columns(NYCParking_2017)
+
+# Adding ParsedIssue Date and a column for Fiscal Year to combine all 3 years data
+
+NYCParking_2015 <- NYCParking_2015 %>% withColumn("Issue Date Parsed", to_date(NYCParking_2015$`Issue Date`,  "MM/dd/yyyy")) %>% 
+  withColumn("Fiscal Year", "2015")
+
+str(NYCParking_2015)
+
+NYCParking_2016 <- NYCParking_2016 %>% withColumn("Issue Date Parsed", to_date(NYCParking_2016$`Issue Date`,  "MM/dd/yyyy")) %>% 
+  withColumn("Fiscal Year", "2016")
+
+str(NYCParking_2016)
+
+NYCParking_2017 <- NYCParking_2017 %>% withColumn("Issue Date Parsed", to_date(NYCParking_2017$`Issue Date`,  "MM/dd/yyyy")) %>% 
+  withColumn("Fiscal Year", "2017")
+
+str(NYCParking_2017)
+
+# creating sql views and Checking if issue dates in each Fiscal Year actually belong to the Fiscal Year
+createOrReplaceTempView(NYCParking_2015,"NYC_2015_View") 
+SparkR::sql("SELECT YEAR(`Issue Date Parsed`) AS Year,MONTH(`Issue Date Parsed`) AS Month,count(*) FROM NYC_2015_View GROUP BY Year,Month ORDER BY Year,Month") %>% head(num = 200)
+
+createOrReplaceTempView(NYCParking_2016,"NYC_2016_View") 
+SparkR::sql("SELECT YEAR(`Issue Date Parsed`) AS Year,MONTH(`Issue Date Parsed`) AS Month,count(*) FROM NYC_2016_View GROUP BY Year,Month ORDER BY Year,Month") %>% head(num = 200)
+
+createOrReplaceTempView(NYCParking_2017,"NYC_2017_View") 
+SparkR::sql("SELECT YEAR(`Issue Date Parsed`) AS Year,MONTH(`Issue Date Parsed`) AS Month,count(*) FROM NYC_2017_View GROUP BY Year,Month ORDER BY Year,Month") %>% head(num = 200)
+
+# We can see that there are lot of rows which should not belong to the Fiscal years. Hence we need to filter them out.
+
+NYCParking_2015 <- SparkR::sql("SELECT * FROM NYC_2015_View WHERE (YEAR(`Issue Date Parsed`) = 2014 and MONTH(`Issue Date Parsed`) >= 7) or (YEAR(`Issue Date Parsed`) = 2015 and MONTH(`Issue Date Parsed`) <= 6)")
+NYCParking_2016 <- SparkR::sql("SELECT * FROM NYC_2016_View WHERE (YEAR(`Issue Date Parsed`) = 2015 and MONTH(`Issue Date Parsed`) >= 7) or (YEAR(`Issue Date Parsed`) = 2016 and MONTH(`Issue Date Parsed`) <= 6)")
+NYCParking_2017 <- SparkR::sql("SELECT * FROM NYC_2017_View WHERE (YEAR(`Issue Date Parsed`) = 2016 and MONTH(`Issue Date Parsed`) >= 7) or (YEAR(`Issue Date Parsed`) = 2017 and MONTH(`Issue Date Parsed`) <= 6)")
+
+# Creating view for sql
+createOrReplaceTempView(NYCParking_2015,"NYC_2015_View") 
+createOrReplaceTempView(NYCParking_2016,"NYC_2016_View") 
+createOrReplaceTempView(NYCParking_2017,"NYC_2017_View") 
+
+# Combining all 3 Fiscal years data into single dataframe
+NYCParking_All <- SparkR::rbind(NYCParking_2015,NYCParking_2016)
+NYCParking_All <- SparkR::rbind(NYCParking_All,NYCParking_2017)
+
