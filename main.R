@@ -114,3 +114,52 @@ createOrReplaceTempView(NYCParking_2017,"NYC_2017_View")
 NYCParking_All <- SparkR::rbind(NYCParking_2015,NYCParking_2016)
 NYCParking_All <- SparkR::rbind(NYCParking_All,NYCParking_2017)
 
+nrow(NYCParking_All)
+str(NYCParking_All)
+
+#Creating view for sql
+createOrReplaceTempView(NYCParking_All,"NYC_All_View")
+
+
+#######################################################################################################
+########################################## Examine the data. ##########################################
+
+
+########### 1. Find total number of tickets for each year.
+
+Num_of_Tickets <- SparkR::sql("SELECT `Fiscal Year`,count(`Summons Number`) as count_SummonsNumber \
+                              FROM NYC_All_View \
+                              GROUP BY `Fiscal Year`
+                              ORDER BY `Fiscal Year`") %>% collect()
+Num_of_Tickets
+
+#      Fiscal Year    count_SummonsNumber     
+#        2015              10598036                       
+#        2016              10396894                       
+#        2017              10539563                       
+
+
+########### 2. Find out how many unique states the cars which got parking tickets came from.
+
+unique_states <- SparkR::sql("SELECT `Fiscal Year`,count(distinct(`Registration State`)) as Count_State \
+                             FROM NYC_All_View \
+                             GROUP BY `Fiscal Year` \
+                             ORDER BY `Fiscal Year` ") %>% collect()
+unique_states
+
+#   Fiscal Year                   Count_State
+#     2015                            69
+#     2016                            68
+#     2017                            67
+
+########### 3. Some parking tickets don’t have addresses on them, which is cause for concern. Find out how many such tickets there are.
+
+empty_address <- SparkR::sql("SELECT `Fiscal Year`,count(`Fiscal Year`) as Frequency_InvalidAddress \
+                             FROM NYC_All_View \
+                             WHERE `House Number` IS NULL \
+                             AND `Street Name` IS NULL \
+                             AND `Intersecting Street` IS NULL \
+                             GROUP BY `Fiscal Year` \
+                             ORDER BY `Fiscal Year` ") %>% collect()
+
+empty_address
