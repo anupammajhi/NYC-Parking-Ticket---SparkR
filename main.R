@@ -215,3 +215,52 @@ NYC_All_Violation_top5_peryear
 #         2017             14              880152
 #         2017             20              609231
 #         2015             21             1469228
+#         2015             38             1305007
+#         2015             14              908418
+#         2015             36              747098
+#         2015             37              735600
+
+# Plot
+
+NYC_All_Body_top5_peryear %>% ggplot(aes(as.character(`Vehicle Body Type`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Vehicle Body Type`)),stat="identity") + 
+  facet_grid(.~`Fiscal Year`) +
+  labs(x="Vehicle Body Type", fill="Vehicle Body Type",title="Frequency of Vehicle Body Type getting parking tickets")
+
+
+###########  2. How often does each vehicle body type get a parking ticket? How about the vehicle make? (find the top 5 for both)
+
+# For Vehicle Body Type
+
+NYC_All_Body_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Vehicle Body Type`,count(`Vehicle Body Type`) AS Frequency \ 
+                                    FROM NYC_All_View \
+                                    GROUP BY `Fiscal Year`,`Vehicle Body Type`")
+
+createOrReplaceTempView(NYC_All_Body_Grouped,"NYC_All_Body_Grouped_View")
+
+NYC_All_Body_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Vehicle Body Type`, Frequency \
+                                         FROM ( SELECT `Fiscal Year`,`Vehicle Body Type`, Frequency, \
+                                         dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank \
+                                         FROM NYC_All_Body_Grouped_View) \
+                                         WHERE rank <= 5") %>% collect()
+
+NYC_All_Body_top5_peryear
+
+#   Fiscal Year Vehicle Body Type Frequency
+#         2016              SUBN   3393838
+#         2016              4DSD   2936729
+#         2016               VAN   1489924
+#         2016              DELV    738747
+#         2016               SDN    401750
+#         2017              SUBN   3632003
+#         2017              4DSD   3017372
+#         2017               VAN   1384121
+#         2017              DELV    672123
+#         2017               SDN    414984
+#         2015              SUBN   3341110
+#         2015              4DSD   3001810
+#         2015               VAN   1570227
+#         2015              DELV    822041
+#         2015               SDN    428571
+
+# Plot
