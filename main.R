@@ -153,3 +153,65 @@ unique_states
 #     2017                            67
 
 ########### 3. Some parking tickets don’t have addresses on them, which is cause for concern. Find out how many such tickets there are.
+
+empty_address <- SparkR::sql("SELECT `Fiscal Year`,count(`Fiscal Year`) as Frequency_InvalidAddress \
+                             FROM NYC_All_View \
+                             WHERE `House Number` IS NULL \
+                             AND `Street Name` IS NULL \
+                             AND `Intersecting Street` IS NULL \
+                             GROUP BY `Fiscal Year` \
+                             ORDER BY `Fiscal Year` ") %>% collect()
+
+empty_address
+
+#     Fiscal Year   Frequency_InvalidAddress
+#        2015               3696
+#        2016               2640
+#        2017               2418 
+
+#Assuming that Intersecting Street is not part of Address.
+empty_address1 <- SparkR::sql("SELECT `Fiscal Year`,count(`Fiscal Year`) as Frequency_InvalidAddress \
+                             FROM NYC_All_View \
+                             WHERE `House Number` IS NULL \
+                             AND `Street Name` IS NULL \
+                             GROUP BY `Fiscal Year` \
+                             ORDER BY `Fiscal Year` ") %>% collect()
+
+empty_address1
+
+#     Fiscal Year   Frequency_InvalidAddress
+#        2015               3759
+#        2016               2788
+#        2017               2553 
+
+#######################################################################################################
+########################################## Aggregation tasks ##########################################
+
+########### 1. How often does each violation code occur? (frequency of violation codes - find the top 5)
+
+NYC_All_Violation_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`,count(`Violation Code`) AS Violation_Frequency \ 
+                                         FROM NYC_All_View \
+                                         GROUP BY `Fiscal Year`,`Violation Code`")
+
+createOrReplaceTempView(NYC_All_Violation_Grouped,"NYC_All_Violation_Grouped_View")
+
+NYC_All_Violation_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`, Violation_Frequency \
+                                              FROM ( SELECT `Fiscal Year`,`Violation Code`, Violation_Frequency, \
+                                              dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Violation_Frequency DESC) AS rank \
+                                              FROM NYC_All_Violation_Grouped_View) \
+                                              WHERE rank <= 5") %>% collect()
+
+NYC_All_Violation_top5_peryear
+
+    # Fiscal Year    Violation Code    Violation_Frequency
+#         2016             21             1497269
+#         2016             36             1232952
+#         2016             38             1126835
+#         2016             14              860045
+#         2016             37              677805
+#         2017             21             1500396
+#         2017             36             1345237
+#         2017             38             1050418
+#         2017             14              880152
+#         2017             20              609231
+#         2015             21             1469228
