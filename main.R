@@ -153,13 +153,3 @@ unique_states
 #     2017                            67
 
 ########### 3. Some parking tickets don’t have addresses on them, which is cause for concern. Find out how many such tickets there are.
-
-empty_address <- SparkR::sql("SELECT `Fiscal Year`,count(`Fiscal Year`) as Frequency_InvalidAddress \
-                             FROM NYC_All_View \
-                             WHERE `House Number` IS NULL \
-                             AND `Street Name` IS NULL \
-                             AND `Intersecting Street` IS NULL \
-                             GROUP BY `Fiscal Year` \
-                             ORDER BY `Fiscal Year` ") %>% collect()
-
-empty_address
