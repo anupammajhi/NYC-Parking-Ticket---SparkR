@@ -304,15 +304,3 @@ NYC_All_Make_top5_peryear
 #         2015        NISSA    805572
 
 # Plot
-
-NYC_All_Make_top5_peryear %>% ggplot(aes(as.character(`Vehicle Make`),Frequency)) +
-  geom_bar(aes(fill=as.character(`Vehicle Make`)),stat="identity") + 
-  facet_grid(.~`Fiscal Year`) +
-  labs(x="Vehicle Make", fill="Vehicle Make",title="Frequency of Vehicle Make getting parking tickets")
-
-
-###########  3. A precinct is a police station that has a certain zone of the city under its command. Find the (5 highest) frequencies of:
-###########  3a. Violating Precincts (this is the precinct of the zone where the violation occurred)
-
-NYC_All_Viol_Precinct_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Violation Precinct`,count(`Violation Precinct`) AS Frequency \ 
-                                             FROM NYC_All_View \
