@@ -304,3 +304,47 @@ NYC_All_Make_top5_peryear
 #         2015        NISSA    805572
 
 # Plot
+
+NYC_All_Make_top5_peryear %>% ggplot(aes(as.character(`Vehicle Make`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Vehicle Make`)),stat="identity") + 
+  facet_grid(.~`Fiscal Year`) +
+  labs(x="Vehicle Make", fill="Vehicle Make",title="Frequency of Vehicle Make getting parking tickets")
+
+
+###########  3. A precinct is a police station that has a certain zone of the city under its command. Find the (5 highest) frequencies of:
+###########  3a. Violating Precincts (this is the precinct of the zone where the violation occurred)
+
+NYC_All_Viol_Precinct_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Violation Precinct`,count(`Violation Precinct`) AS Frequency \ 
+                                             FROM NYC_All_View \
+                                             GROUP BY `Fiscal Year`,`Violation Precinct`")
+
+createOrReplaceTempView(NYC_All_Viol_Precinct_Grouped ,"NYC_All_Viol_Precinct_Grouped_View")
+
+NYC_All_Viol_Precinct_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Violation Precinct`, Frequency \
+                                                  FROM ( SELECT `Fiscal Year`,`Violation Precinct`, Frequency, \
+                                                  dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank \
+                                                  FROM NYC_All_Viol_Precinct_Grouped_View) \
+                                                  WHERE rank <= 5") %>% collect()
+
+NYC_All_Viol_Precinct_top5_peryear 
+
+#  Fiscal Year Violation Precinct Frequency
+#         2016                  0   1807139
+#         2016                 19    545669
+#         2016                 18    325559
+#         2016                 14    318193
+#         2016                  1    299074
+#         2017                  0   1950083
+#         2017                 19    528317
+#         2017                 14    347736
+#         2017                  1    326961
+#         2017                 18    302008
+#         2015                  0   1455166
+#         2015                 19    550797
+#         2015                 18    393802
+#         2015                 14    377750
+#         2015                  1    302737
+
+# Plot
+
+NYC_All_Viol_Precinct_top5_peryear %>% ggplot(aes(as.character(`Violation Precinct`),Frequency)) +
