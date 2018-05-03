@@ -264,3 +264,55 @@ NYC_All_Body_top5_peryear
 #         2015               SDN    428571
 
 # Plot
+
+NYC_All_Body_top5_peryear %>% ggplot(aes(as.character(`Vehicle Body Type`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Vehicle Body Type`)),stat="identity") + 
+  facet_grid(.~`Fiscal Year`) +
+  labs(x="Vehicle Body Type", fill="Vehicle Body Type",title="Frequency of Vehicle Body Type getting parking tickets")
+
+# For Vehicle Make
+
+NYC_All_Make_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Vehicle Make`,count(`Vehicle Make`) AS Frequency \ 
+                                    FROM NYC_All_View \
+                                    GROUP BY `Fiscal Year`,`Vehicle Make`")
+
+createOrReplaceTempView(NYC_All_Make_Grouped ,"NYC_All_Make_Grouped_View")
+
+NYC_All_Make_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Vehicle Make`, Frequency \
+                                         FROM ( SELECT `Fiscal Year`,`Vehicle Make`, Frequency, \
+                                         dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank \
+                                         FROM NYC_All_Make_Grouped_View) \
+                                         WHERE rank <= 5") %>% collect()
+
+NYC_All_Make_top5_peryear
+
+#   Fiscal Year Vehicle Make Frequency
+#         2016         FORD   1297363
+#         2016        TOYOT   1128909
+#         2016        HONDA    991735
+#         2016        NISSA    815963
+#         2016        CHEVR    743416
+#         2017         FORD   1250777
+#         2017        TOYOT   1179265
+#         2017        HONDA   1052006
+#         2017        NISSA    895225
+#         2017        CHEVR    698024
+#         2015         FORD   1373157
+#         2015        TOYOT   1082206
+#         2015        HONDA    982130
+#         2015        CHEVR    811659
+#         2015        NISSA    805572
+
+# Plot
+
+NYC_All_Make_top5_peryear %>% ggplot(aes(as.character(`Vehicle Make`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Vehicle Make`)),stat="identity") + 
+  facet_grid(.~`Fiscal Year`) +
+  labs(x="Vehicle Make", fill="Vehicle Make",title="Frequency of Vehicle Make getting parking tickets")
+
+
+###########  3. A precinct is a police station that has a certain zone of the city under its command. Find the (5 highest) frequencies of:
+###########  3a. Violating Precincts (this is the precinct of the zone where the violation occurred)
+
+NYC_All_Viol_Precinct_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Violation Precinct`,count(`Violation Precinct`) AS Frequency \ 
+                                             FROM NYC_All_View \
