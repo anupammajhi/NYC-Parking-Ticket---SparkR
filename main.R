@@ -338,13 +338,3 @@ NYC_All_Viol_Precinct_top5_peryear
 #         2017                 19    528317
 #         2017                 14    347736
 #         2017                  1    326961
-#         2017                 18    302008
-#         2015                  0   1455166
-#         2015                 19    550797
-#         2015                 18    393802
-#         2015                 14    377750
-#         2015                  1    302737
-
-# Plot
-
-NYC_All_Viol_Precinct_top5_peryear %>% ggplot(aes(as.character(`Violation Precinct`),Frequency)) +
