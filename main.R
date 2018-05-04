@@ -327,14 +327,3 @@ NYC_All_Viol_Precinct_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Violati
                                                   WHERE rank <= 5") %>% collect()
 
 NYC_All_Viol_Precinct_top5_peryear 
-
-#  Fiscal Year Violation Precinct Frequency
-#         2016                  0   1807139
-#         2016                 19    545669
-#         2016                 18    325559
-#         2016                 14    318193
-#         2016                  1    299074
-#         2017                  0   1950083
-#         2017                 19    528317
-#         2017                 14    347736
-#         2017                  1    326961
