@@ -473,3 +473,61 @@ NYC_All_Violation_Per_Precinct_top5_peryear
 #          14          14,69,31,47,42
 #          19          46,38,37,14,21
 
+# 2016      0          36,07,21,05,66
+#          14          69,14,31,47,42
+#          19          38,37,46,14,21
+
+# 2015      0          36,07,21,05,66
+#          14          69,14,31,42,47
+#          19          38,37,14,16,21
+
+# Plot
+
+NYC_All_Violation_Per_Precinct_top5_peryear %>% ggplot(aes(as.character(`Violation Code`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Violation Code`)),stat="identity") + 
+  facet_grid(`Issuer Precinct`~`Fiscal Year`) +
+  labs(x="Violation Code", fill="Violation Code",title="Frequency of Violation Code getting parking tickets")
+
+###########  5.You’d want to find out the properties of parking violations across different times of the day:
+###########  5a. The Violation Time field is specified in a strange format. Find a way to make this into a time attribute that you can use to divide into groups.
+#       AND  5b. Find a way to deal with missing values, if any.
+
+# If Violation Time is Null, we will replace that with "From Hours in Effect" column value
+NYCParking_All_2 <- NYCParking_All
+NYCParking_All_2$`Violation Time` <- ifelse(isNull(NYCParking_All_2$`Violation Time`) & NYCParking_All_2$`From Hours In Effect` != "ALL" ,NYCParking_All_2$`From Hours In Effect`,NYCParking_All_2$`Violation Time`)
+
+# We start by splitting the string
+
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Hour", substr(NYCParking_All_2$`Violation Time`,1,2)) %>% withColumn( "Minute", substr(NYCParking_All_2$`Violation Time`,4,5 ))%>% withColumn( "a_p", substr(NYCParking_All_2$`Violation Time`,6,6 ))
+str(NYCParking_All_2)
+
+# Next we concat the various strings
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Violation Time String", concat_ws( ':' ,cast(NYCParking_All_2$`Hour`, 'string'), NYCParking_All_2$`Minute` ))
+str(NYCParking_All_2)
+
+# We then convert to unix_timestamp
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Violation Time Parsed", unix_timestamp(NYCParking_All_2$`Violation Time String`, 'HH:mm'))
+str(NYCParking_All_2)
+
+# To get the correct hour, we use a condition to add 12 hours(12*60*60 in seconds)
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Actual Time Parsed", 
+                                                    ifelse(NYCParking_All_2$`a_p` == 'P', NYCParking_All_2$`Violation Time Parsed` + (12*60*60), NYCParking_All_2$`Violation Time Parsed`))
+str(NYCParking_All_2)
+
+# Finally we convert this to a timestamp format
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Actual Violation Time", cast(NYCParking_All_2$`Actual Time Parsed`, 'timestamp'))
+str(NYCParking_All_2)
+
+
+# Checking for NA's
+
+filter(NYCParking_All_2, isNull(NYCParking_All_2$`Actual Violation Time`)) %>% nrow()
+
+# We have 2684 Missing Values. We will Remove these rows
+NYCParking_All_2 <- filter(NYCParking_All_2, isNotNull(NYCParking_All_2$`Actual Violation Time`)) 
+
+
+###########  5c. Divide 24 hours into 6 equal discrete bins of time. The intervals you choose are at your discretion. For each of these groups, find the 3 most commonly occurring violations
+
+# Splitting time into 6 bins
+
