@@ -373,3 +373,63 @@ NYC_All_Issue_Precinct_top5_peryear
 #         2016               0   2067219
 #         2016              19    532298
 #         2016              18    317451
+#         2016              14    309727
+#         2016               1    290472
+#         2017               0   2255086
+#         2017              19    514786
+#         2017              14    340862
+#         2017               1    316776
+#         2017              18    292237
+#         2015               0   1648671
+#         2015              19    536627
+#         2015              18    384863
+#         2015              14    363734
+#         2015               1    293942
+
+# Plot
+
+NYC_All_Issue_Precinct_top5_peryear %>% ggplot(aes(as.character(`Issuer Precinct`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Issuer Precinct`)),stat="identity") + 
+  facet_grid(.~`Fiscal Year`) +
+  labs(x="Issuer Precinct", fill="Issuer Precinct",title="Frequency of Issuer Precinct getting parking tickets")
+  
+###########  4. Find the violation code frequency across 3 precincts which have issued the most number of tickets - do these precinct zones have an exceptionally high frequency of certain violation codes? Are these codes common across precincts?
+
+# Top 3 precincts which issued maximum tickets
+
+SparkR::sql("SELECT `Issuer Precinct`,count(`Issuer Precinct`) AS Frequency \ 
+            FROM NYC_All_View \
+            GROUP BY `Issuer Precinct` \
+            ORDER BY Frequency") %>% head(num=3)
+
+# 0,19,14 are the top 3 precincts which issued most tickets			
+
+NYC_All_Violation_Per_Precinct_Grouped <- SparkR::sql("SELECT `Fiscal Year`,`Issuer Precinct`,`Violation Code`,count(`Violation Code`) AS Frequency \ 
+                                                      FROM NYC_All_View WHERE `Issuer Precinct` IN (0,19,14) \
+                                                      GROUP BY `Fiscal Year`,`Violation Code`,`Issuer Precinct`")
+
+createOrReplaceTempView(NYC_All_Violation_Per_Precinct_Grouped ,"NYC_All_Violation_Per_Precinct_Grouped_View")
+
+NYC_All_Violation_Per_Precinct_top5_peryear <- SparkR::sql("SELECT `Fiscal Year`,`Issuer Precinct`,`Violation Code`, Frequency \
+                                                           FROM ( SELECT `Fiscal Year`,`Issuer Precinct`,`Violation Code`, Frequency, \
+                                                           dense_rank() OVER(PARTITION BY `Fiscal Year`,`Issuer Precinct` ORDER BY Frequency DESC) AS rank \
+                                                           FROM NYC_All_Violation_Per_Precinct_Grouped_View \
+                                                           ) \
+                                                           WHERE rank <= 5") %>% head(num=70)
+
+NYC_All_Violation_Per_Precinct_top5_peryear
+
+# Fiscal Year Issuer Precinct Violation Code Frequency
+# 1         2017              14             14     73007
+# 2         2017              14             69     57316
+# 3         2017              14             31     39430
+# 4         2017              14             47     30200
+# 5         2017              14             42     20402
+# 6         2016              14             69     66874
+# 7         2016              14             14     61358
+# 8         2016              14             31     35169
+# 9         2016              14             47     23985
+# 10        2016              14             42     23293
+# 11        2015              14             69     79330
+# 12        2015              14             14     75985
+# 13        2015              14             31     40410
