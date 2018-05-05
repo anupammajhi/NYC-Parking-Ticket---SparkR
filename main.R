@@ -575,3 +575,61 @@ topviol_across_time_top3
 # 11        2017       Morning             36    353910
 # 12        2017       Morning             14    273567
 # 13        2015         Night              7    101896
+# 14        2015         Night             38    100776
+# 15        2015         Night             14     49055
+# 16        2015 Early Morning             40     40851
+# 17        2015 Early Morning             14     26663
+# 18        2015 Early Morning             21     24944
+# 19        2017     Afternoon             36    594090
+# 20        2017     Afternoon             21    436648
+# 21        2017     Afternoon             38    330862
+# 22        2016    Late Night             21    172421
+# 23        2016    Late Night             36    164171
+# 24        2016    Late Night             38    124295
+# 25        2016       Evening             38    384862
+# 26        2016       Evening             37    314841
+# 27        2016       Evening             36    256624
+# 28        2016 Early Morning             40     40224
+# 29        2016 Early Morning             14     28674
+# 30        2016 Early Morning             21     26697
+# 31        2016         Night             38     86443
+# 32        2016         Night              7     82456
+# 33        2016         Night             14     46568
+# 34        2015       Evening             38    445972
+# 35        2015       Evening             37    340951
+# 36        2015       Evening             14    237059
+# 37        2015    Late Night             21    168867
+# 38        2015    Late Night             38    141099
+# 39        2015    Late Night             36    100871
+# 40        2016     Afternoon             36    475441
+# 41        2016     Afternoon             21    453488
+# 42        2016     Afternoon             38    358220
+# 43        2015       Morning             21    817539
+# 44        2015       Morning             14    280973
+# 45        2015       Morning             36    215373
+# 46        2016       Morning             21    843694
+# 47        2016       Morning             36    336379
+# 48        2016       Morning             14    271737
+# 49        2017         Night              7     84112
+# 50        2017         Night             38     73387
+# 51        2017         Night             14     48595
+# 52        2015     Afternoon             21    456602
+# 53        2015     Afternoon             38    411271
+# 54        2015     Afternoon             36    289998									
+										
+
+#Summary of table above: 
+#   Year    Time of Day    Most Occuring Violation Codes in Descending order
+
+#   2017    Morning         21,36,14
+#           Afternoon       36,21,38
+#           Evening         38,37,14
+#           Night           07,38,14
+#           Late Night      36,21,38
+#           Early Morn      40,21,14
+
+#   2016    Morning         21,36,14
+#           Afternoon       36,21,38
+#           Evening         38,37,36
+#           Night           38,07,14
+#           Late Night      21,36,38
