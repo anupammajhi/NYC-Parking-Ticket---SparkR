@@ -531,3 +531,47 @@ NYCParking_All_2 <- filter(NYCParking_All_2, isNotNull(NYCParking_All_2$`Actual 
 
 # Splitting time into 6 bins
 
+
+NYCParking_All_2 <- NYCParking_All_2 %>% withColumn("Time of Day", 
+                                                    ifelse(hour(NYCParking_All_2$`Actual Violation Time`) >= 2 & hour(NYCParking_All_2$`Actual Violation Time`) < 6, 'Early Morning',
+                                                           ifelse(hour(NYCParking_All_2$`Actual Violation Time`) >= 6 & hour(NYCParking_All_2$`Actual Violation Time`) < 10, 'Morning',
+                                                                  ifelse(hour(NYCParking_All_2$`Actual Violation Time`) >= 10 & hour(NYCParking_All_2$`Actual Violation Time`) < 14, 'Afternoon',
+                                                                         ifelse(hour(NYCParking_All_2$`Actual Violation Time`) >= 14 & hour(NYCParking_All_2$`Actual Violation Time`) < 18, 'Evening',
+                                                                                ifelse(hour(NYCParking_All_2$`Actual Violation Time`) >= 18 & hour(NYCParking_All_2$`Actual Violation Time`) < 22, 'Night', 'Late Night'
+                                                                                ))))))
+str(NYCParking_All_2)
+
+
+# Updating SQL View
+createOrReplaceTempView(NYCParking_All_2, "NYC_All_View_2")
+
+
+# Finding 3 most common violation across the time slots
+
+topviol_across_time <- SparkR::sql("select `Fiscal Year` , `Time of Day` , `Violation Code`, count(*) as Frequency from NYC_All_View_2 group by `Fiscal Year`, `Time of Day`, `Violation Code` " )
+
+
+createOrReplaceTempView(topviol_across_time, "topviol_across_time_view")
+
+topviol_across_time_top3 <- SparkR::sql("SELECT `Fiscal Year`,`Time of Day`, `Violation Code`,  Frequency 
+                                        FROM ( SELECT `Fiscal Year`,`Time of Day`, `Violation Code`,  Frequency, 
+                                        dense_rank() OVER(PARTITION BY `Fiscal Year`, `Time of Day` ORDER BY Frequency DESC) AS rank 
+                                        FROM topviol_across_time_view) 
+                                        WHERE rank <= 3") %>% collect()
+topviol_across_time_top3
+										
+# Obtained Output:
+# No.Fiscal Year Time of Day    Violation Code Frequency
+# 1         2017 Early Morning             40     50460
+# 2         2017 Early Morning             21     32248
+# 3         2017 Early Morning             14     26719
+# 4         2017    Late Night             36    204242
+# 5         2017    Late Night             21    186348
+# 6         2017    Late Night             38    110884
+# 7         2017       Evening             38    379239
+# 8         2017       Evening             37    284663
+# 9         2017       Evening             14    235729
+# 10        2017       Morning             21    844285
+# 11        2017       Morning             36    353910
+# 12        2017       Morning             14    273567
+# 13        2015         Night              7    101896
