@@ -641,3 +641,63 @@ topviol_across_time_top3
 #           Night           07,38,14
 #           Late Night      21,38,36
 #           Early Morn      40,14,21
+
+# We can see that the Violation Codes are fairly similar across all years for various times of day
+
+# Plot
+
+topviol_across_time_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Violation Code`), alpha = 0.4),stat="identity") + 
+  facet_grid(`Time of Day`~`Fiscal Year` ) +
+  labs(x="Violation Code", fill="Violation Code", title="Frequency of Most Common Violation Across Time-Slots")
+
+# The codes 14, 21 and 38 are common acrooss all the different time slots
+
+###########  5d. Now, try another direction. For the 3 most commonly occurring violation codes, find the most common times of day (in terms of the bins from the previous part)
+
+toptime_across_viol <- SparkR::sql("select `Fiscal Year`, `Violation Code` ,`Time of Day`, count(*) as Frequency from NYC_All_View_2 
+                                   where `Violation Code` = 14 or `Violation Code` = 21 or `Violation Code` = 38 group by `Fiscal Year` , `Violation Code`, `Time of Day`  " )
+
+
+createOrReplaceTempView(toptime_across_viol, "toptime_across_viol_view")
+
+toptime_across_viol_top5 <- SparkR::sql("SELECT `Fiscal Year`, `Violation Code`, `Time of Day`,  Frequency 
+                                        FROM ( SELECT `Fiscal Year`, `Violation Code`, `Time of Day`, Frequency, 
+                                        dense_rank() OVER(PARTITION BY `Fiscal Year`, `Violation Code` ORDER BY Frequency DESC) AS rank 
+                                        FROM toptime_across_viol_view) 
+                                        WHERE rank <= 5") %>% collect()
+toptime_across_viol_top5
+										
+#Obtained Output:
+# No.   Fiscal Year Violation Code   Time of Day Frequency
+# 1         2017             14       Morning    273567
+# 2         2017             14       Evening    235729
+# 3         2017             14     Afternoon    201580
+# 4         2017             14    Late Night     93952
+# 5         2017             14         Night     48595
+# 6         2016             14       Morning    271737
+# 7         2016             14       Evening    218313
+# 8         2016             14     Afternoon    198623
+# 9         2016             14    Late Night     96113
+# 10        2016             14         Night     46568
+# 11        2017             21       Morning    844285
+# 12        2017             21     Afternoon    436648
+# 13        2017             21    Late Night    186348
+# 14        2017             21 Early Morning     32248
+# 15        2017             21       Evening       548
+# 16        2015             14       Morning    280973
+# 17        2015             14       Evening    237059
+# 18        2015             14     Afternoon    214853
+# 19        2015             14    Late Night     99802
+# 20        2015             14         Night     49055
+# 21        2016             21       Morning    843694
+# 22        2016             21     Afternoon    453488
+# 23        2016             21    Late Night    172421
+# 24        2016             21 Early Morning     26697
+# 25        2016             21       Evening       593
+# 26        2016             38       Evening    384862
+# 27        2016             38     Afternoon    358220
+# 28        2016             38       Morning    172527
+# 29        2016             38    Late Night    124295
+# 30        2016             38         Night     86443
+# 31        2015             21       Morning    817539
