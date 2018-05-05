@@ -633,3 +633,49 @@ topviol_across_time_top3
 #           Evening         38,37,36
 #           Night           38,07,14
 #           Late Night      21,36,38
+#           Early Morn      40,14,21
+
+#   2015    Morning         21,14,36
+#           Afternoon       21,38,36
+#           Evening         38,37,14
+#           Night           07,38,14
+#           Late Night      21,38,36
+#           Early Morn      40,14,21
+
+# We can see that the Violation Codes are fairly similar across all years for various times of day
+
+# Plot
+
+topviol_across_time_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Violation Code`), alpha = 0.4),stat="identity") + 
+  facet_grid(`Time of Day`~`Fiscal Year` ) +
+  labs(x="Violation Code", fill="Violation Code", title="Frequency of Most Common Violation Across Time-Slots")
+
+# The codes 14, 21 and 38 are common acrooss all the different time slots
+
+###########  5d. Now, try another direction. For the 3 most commonly occurring violation codes, find the most common times of day (in terms of the bins from the previous part)
+
+toptime_across_viol <- SparkR::sql("select `Fiscal Year`, `Violation Code` ,`Time of Day`, count(*) as Frequency from NYC_All_View_2 
+                                   where `Violation Code` = 14 or `Violation Code` = 21 or `Violation Code` = 38 group by `Fiscal Year` , `Violation Code`, `Time of Day`  " )
+
+
+createOrReplaceTempView(toptime_across_viol, "toptime_across_viol_view")
+
+toptime_across_viol_top5 <- SparkR::sql("SELECT `Fiscal Year`, `Violation Code`, `Time of Day`,  Frequency 
+                                        FROM ( SELECT `Fiscal Year`, `Violation Code`, `Time of Day`, Frequency, 
+                                        dense_rank() OVER(PARTITION BY `Fiscal Year`, `Violation Code` ORDER BY Frequency DESC) AS rank 
+                                        FROM toptime_across_viol_view) 
+                                        WHERE rank <= 5") %>% collect()
+toptime_across_viol_top5
+										
+#Obtained Output:
+# No.   Fiscal Year Violation Code   Time of Day Frequency
+# 1         2017             14       Morning    273567
+# 2         2017             14       Evening    235729
+# 3         2017             14     Afternoon    201580
+# 4         2017             14    Late Night     93952
+# 5         2017             14         Night     48595
+# 6         2016             14       Morning    271737
+# 7         2016             14       Evening    218313
+# 8         2016             14     Afternoon    198623
+# 9         2016             14    Late Night     96113
