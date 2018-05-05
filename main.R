@@ -669,13 +669,3 @@ toptime_across_viol_top5 <- SparkR::sql("SELECT `Fiscal Year`, `Violation Code`,
 toptime_across_viol_top5
 										
 #Obtained Output:
-# No.   Fiscal Year Violation Code   Time of Day Frequency
-# 1         2017             14       Morning    273567
-# 2         2017             14       Evening    235729
-# 3         2017             14     Afternoon    201580
-# 4         2017             14    Late Night     93952
-# 5         2017             14         Night     48595
-# 6         2016             14       Morning    271737
-# 7         2016             14       Evening    218313
-# 8         2016             14     Afternoon    198623
-# 9         2016             14    Late Night     96113
