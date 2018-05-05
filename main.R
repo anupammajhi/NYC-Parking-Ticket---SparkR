@@ -659,13 +659,3 @@ toptime_across_viol <- SparkR::sql("select `Fiscal Year`, `Violation Code` ,`Tim
                                    where `Violation Code` = 14 or `Violation Code` = 21 or `Violation Code` = 38 group by `Fiscal Year` , `Violation Code`, `Time of Day`  " )
 
 
-createOrReplaceTempView(toptime_across_viol, "toptime_across_viol_view")
-
-toptime_across_viol_top5 <- SparkR::sql("SELECT `Fiscal Year`, `Violation Code`, `Time of Day`,  Frequency 
-                                        FROM ( SELECT `Fiscal Year`, `Violation Code`, `Time of Day`, Frequency, 
-                                        dense_rank() OVER(PARTITION BY `Fiscal Year`, `Violation Code` ORDER BY Frequency DESC) AS rank 
-                                        FROM toptime_across_viol_view) 
-                                        WHERE rank <= 5") %>% collect()
-toptime_across_viol_top5
-										
-#Obtained Output:
