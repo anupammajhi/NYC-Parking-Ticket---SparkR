@@ -641,12 +641,3 @@ topviol_across_time_top3
 #           Night           07,38,14
 #           Late Night      21,38,36
 #           Early Morn      40,14,21
-
-# We can see that the Violation Codes are fairly similar across all years for various times of day
-
-# Plot
-
-topviol_across_time_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequency)) +
-  geom_bar(aes(fill=as.character(`Violation Code`), alpha = 0.4),stat="identity") + 
-  facet_grid(`Time of Day`~`Fiscal Year` ) +
-  labs(x="Violation Code", fill="Violation Code", title="Frequency of Most Common Violation Across Time-Slots")
