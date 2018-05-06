@@ -725,15 +725,3 @@ toptime_across_viol_top5
 
 # 2016      14                M,E,A,LN,N
 #           21                M,A,LN,EM,E
-#           38                E,A,M,LN,N
-
-# 2015      14                M,E,A,LN,N
-#           21                M,A,LN,EM,E
-#           38                E,A,M,LN,N
-
-# The most Ocurring Times of Day are exactly the same across all three years for given Violation Codes 										
-										
-# Plot
-
-toptime_across_viol_top5 %>% ggplot(aes(as.character(`Time of Day`),Frequency)) +
-  geom_bar(aes(fill=as.character(`Time of Day`), alpha = 0.4),stat="identity") + 
