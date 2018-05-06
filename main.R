@@ -693,11 +693,3 @@ toptime_across_viol_top5
 # 21        2016             21       Morning    843694
 # 22        2016             21     Afternoon    453488
 # 23        2016             21    Late Night    172421
-# 24        2016             21 Early Morning     26697
-# 25        2016             21       Evening       593
-# 26        2016             38       Evening    384862
-# 27        2016             38     Afternoon    358220
-# 28        2016             38       Morning    172527
-# 29        2016             38    Late Night    124295
-# 30        2016             38         Night     86443
-# 31        2015             21       Morning    817539
