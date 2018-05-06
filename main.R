@@ -693,3 +693,47 @@ toptime_across_viol_top5
 # 21        2016             21       Morning    843694
 # 22        2016             21     Afternoon    453488
 # 23        2016             21    Late Night    172421
+# 24        2016             21 Early Morning     26697
+# 25        2016             21       Evening       593
+# 26        2016             38       Evening    384862
+# 27        2016             38     Afternoon    358220
+# 28        2016             38       Morning    172527
+# 29        2016             38    Late Night    124295
+# 30        2016             38         Night     86443
+# 31        2015             21       Morning    817539
+# 32        2015             21     Afternoon    456602
+# 33        2015             21    Late Night    168867
+# 34        2015             21 Early Morning     24944
+# 35        2015             21       Evening       809
+# 36        2015             38       Evening    445972
+# 37        2015             38     Afternoon    411271
+# 38        2015             38       Morning    205162
+# 39        2015             38    Late Night    141099
+# 40        2015             38         Night    100776
+# 41        2017             38       Evening    379239
+# 42        2017             38     Afternoon    330862
+# 43        2017             38       Morning    155623
+# 44        2017             38    Late Night    110884
+# 45        2017             38         Night     73387
+										
+																												
+#Summary of the table above.										
+# Year    Violation Code      Time of Day(most occuring, desc order)
+# 2017      14                M,E,A,LN,N
+#           21                M,A,LN,EM,E
+#           38                E,A,M,LN,N
+
+# 2016      14                M,E,A,LN,N
+#           21                M,A,LN,EM,E
+#           38                E,A,M,LN,N
+
+# 2015      14                M,E,A,LN,N
+#           21                M,A,LN,EM,E
+#           38                E,A,M,LN,N
+
+# The most Ocurring Times of Day are exactly the same across all three years for given Violation Codes 										
+										
+# Plot
+
+toptime_across_viol_top5 %>% ggplot(aes(as.character(`Time of Day`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Time of Day`), alpha = 0.4),stat="identity") + 
