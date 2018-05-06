@@ -773,12 +773,3 @@ tickets_across_seasons_r <- collect(tickets_across_seasons)
 #         Spring    2789066
 
 # 2015    Summer    2838306
-#         Autumn    2718502
-#         Winter    2180241
-#         Spring    2860987
-
-
-
-# Plot
-
-tickets_across_seasons_r %>% ggplot(aes(as.character(`Season`),Frequency)) +
