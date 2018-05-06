@@ -725,3 +725,60 @@ toptime_across_viol_top5
 
 # 2016      14                M,E,A,LN,N
 #           21                M,A,LN,EM,E
+#           38                E,A,M,LN,N
+
+# 2015      14                M,E,A,LN,N
+#           21                M,A,LN,EM,E
+#           38                E,A,M,LN,N
+
+# The most Ocurring Times of Day are exactly the same across all three years for given Violation Codes 										
+										
+# Plot
+
+toptime_across_viol_top5 %>% ggplot(aes(as.character(`Time of Day`),Frequency)) +
+  geom_bar(aes(fill=as.character(`Time of Day`), alpha = 0.4),stat="identity") + 
+  facet_grid(`Violation Code`~`Fiscal Year`) +
+  labs(x="Time of Day", fill="Time of Day", title="Frequency of Time of Day for top 3 Violation Codes")
+										
+										
+###########  6. Let's try and find some seasonality in this data
+###########  6a. First, divide the year into some number of seasons, and find frequencies of tickets for each season.
+
+NYCParking_All <- NYCParking_All %>% withColumn("Season", 
+                                                ifelse(month(NYCParking_All$`Issue Date Parsed`) >= 3 & month(NYCParking_All$`Issue Date Parsed`) < 6, 'Spring',
+                                                       ifelse(month(NYCParking_All$`Issue Date Parsed`) >= 6 & month(NYCParking_All$`Issue Date Parsed`) < 9, 'Summer',
+                                                              ifelse(month(NYCParking_All$`Issue Date Parsed`) >= 9 & month(NYCParking_All$`Issue Date Parsed`) < 12, 'Autumn', 'Winter'
+                                                              ))))
+
+# Updating SQL View
+
+createOrReplaceTempView(NYCParking_All, 'NYC_All_View')
+
+
+
+tickets_across_seasons <- SparkR::sql("select `Fiscal Year`,`Season` , count(*) as Frequency from NYC_All_View group by `Fiscal Year`,`Season` order by count(*) desc " )
+
+tickets_across_seasons_r <- collect(tickets_across_seasons)
+
+# Year    Season    Frequency
+
+# 2017    Summer    2353920
+#         Autumn    2829224
+#         Winter    2483036
+#         Spring    2873383
+
+# 2016    Summer    2214536
+#         Autumn    2971672
+#         Winter    2421620
+#         Spring    2789066
+
+# 2015    Summer    2838306
+#         Autumn    2718502
+#         Winter    2180241
+#         Spring    2860987
+
+
+
+# Plot
+
+tickets_across_seasons_r %>% ggplot(aes(as.character(`Season`),Frequency)) +
