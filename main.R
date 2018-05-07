@@ -839,15 +839,3 @@ topviol_across_season_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequen
 violcode <- SparkR::sql("select `Fiscal Year`, `Violation Code`, count(*) as Frequency from NYC_All_View group by `Fiscal Year`, `Violation Code` " )
 
 createOrReplaceTempView(violcode, 'violcode_view')
-
-
-violcode_top4<- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`, Frequency 
-                            FROM ( SELECT `Fiscal Year`,`Violation Code`, Frequency, 
-                            dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank 
-                            FROM violcode_view) 
-                            WHERE rank <= 4") %>% collect()
-
-
-
-
-###########  7b. Then, search the internet for NYC parking violation code fines. You will find a website (on the nyc.gov URL) that lists these fines. They’re divided into two categories, one for the highest-density locations of the city, the other for the rest of the city. For simplicity, take an average of the two.
