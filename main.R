@@ -773,3 +773,66 @@ tickets_across_seasons_r <- collect(tickets_across_seasons)
 #         Spring    2789066
 
 # 2015    Summer    2838306
+#         Autumn    2718502
+#         Winter    2180241
+#         Spring    2860987
+
+
+
+# Plot
+
+tickets_across_seasons_r %>% ggplot(aes(as.character(`Season`),Frequency)) +
+    geom_bar(aes(fill=as.character(`Season`), alpha = 0.4),stat="identity") + 
+    facet_grid(.~`Fiscal Year`) +
+    labs(x="Season", fill="Season", title="Frequency of Tickets Per Season")
+
+###########  6b. Then, find the 3 most common violations for each of these season
+
+topviol_across_season <- SparkR::sql("select `Fiscal Year` , `Season` , `Violation Code`, count(*) as Frequency from NYC_All_View group by `Fiscal Year`, `Season`, `Violation Code` " )
+
+
+createOrReplaceTempView(topviol_across_season, "topviol_across_season_view")
+
+topviol_across_season_top3 <- SparkR::sql("SELECT `Fiscal Year`,`Season`, `Violation Code`,  Frequency \
+                                          FROM ( SELECT `Fiscal Year`,`Season`, `Violation Code`,  Frequency, \
+                                          dense_rank() OVER(PARTITION BY `Fiscal Year`, `Season` ORDER BY Frequency DESC) AS rank \
+                                          FROM topviol_across_season_view) \
+                                          WHERE rank <= 3") %>% collect()
+
+
+
+# Year    Season    Violation Code(most occuring, descending order)
+
+# 2017    Summer    21,38,14
+#         Autumn    36,21,38
+#         Winter    21,36,38
+#         Spring    21,36,38
+
+# 2016    Summer    21,38,14
+#         Autumn    36,21,38
+#         Winter    21,36,38
+#         Spring    21,36,38
+
+# 2015    Summer    21,38,14
+#         Autumn    21,38,14
+#         Winter    38,21,14
+#         Spring    21,38,14
+
+# The Violation Codes are fairly similar across all the years and across all seasons
+
+
+# Plot
+
+topviol_across_season_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequency)) +
+    geom_bar(aes(fill=as.character(`Violation Code`), alpha = 0.4),stat="identity") + 
+    facet_grid(`Season` ~`Fiscal Year` ) +
+    labs(x="Violation Code", fill="Violation Code", title="Frequency of Most Common Violation over Seasons")
+
+
+
+###########  7. The fines collected from all the parking violation constitute a revenue source for the NYC police department. Let’s take an example of estimating that for the 3 most commonly occurring codes.
+
+###########  7a. Find total occurrences of the 3 most common violation codes
+
+# The Fine for Violation Code 36 has not been mentioned on the government website. Therefore, we code it as zero. As a result we will also find the 4th frequent code
+
