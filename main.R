@@ -828,3 +828,45 @@ topviol_across_season_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequen
     facet_grid(`Season` ~`Fiscal Year` ) +
     labs(x="Violation Code", fill="Violation Code", title="Frequency of Most Common Violation over Seasons")
 
+
+
+###########  7. The fines collected from all the parking violation constitute a revenue source for the NYC police department. Let’s take an example of estimating that for the 3 most commonly occurring codes.
+
+###########  7a. Find total occurrences of the 3 most common violation codes
+
+# The Fine for Violation Code 36 has not been mentioned on the government website. Therefore, we code it as zero. As a result we will also find the 4th frequent code
+
+violcode <- SparkR::sql("select `Fiscal Year`, `Violation Code`, count(*) as Frequency from NYC_All_View group by `Fiscal Year`, `Violation Code` " )
+
+createOrReplaceTempView(violcode, 'violcode_view')
+
+
+violcode_top4<- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`, Frequency 
+                            FROM ( SELECT `Fiscal Year`,`Violation Code`, Frequency, 
+                            dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank 
+                            FROM violcode_view) 
+                            WHERE rank <= 4") %>% collect()
+
+
+
+
+###########  7b. Then, search the internet for NYC parking violation code fines. You will find a website (on the nyc.gov URL) that lists these fines. They’re divided into two categories, one for the highest-density locations of the city, the other for the rest of the city. For simplicity, take an average of the two.
+# We will use the data from nyc.gov url to create a table for the fines
+
+# As mentioned before, we will code fine amount of code 36 as 0 as the data is unavailable
+
+# Code    Average Fine
+#  21     55
+#  36     00
+#  38     50
+#  14     115
+
+
+Violation <- c(21,36,38,14)
+Amount <-  c(55,00,50,115)
+
+Fines <- data.frame(cbind(Violation,Amount))
+
+Revenue <- merge(violcode_top4, Fines , by.x ='Violation Code', by.y = 'Violation')
+
+
