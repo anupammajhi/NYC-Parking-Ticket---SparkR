@@ -839,3 +839,59 @@ topviol_across_season_top3 %>% ggplot(aes(as.character(`Violation Code`),Frequen
 violcode <- SparkR::sql("select `Fiscal Year`, `Violation Code`, count(*) as Frequency from NYC_All_View group by `Fiscal Year`, `Violation Code` " )
 
 createOrReplaceTempView(violcode, 'violcode_view')
+
+
+violcode_top4<- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`, Frequency 
+                            FROM ( SELECT `Fiscal Year`,`Violation Code`, Frequency, 
+                            dense_rank() OVER(PARTITION BY `Fiscal Year` ORDER BY Frequency DESC) AS rank 
+                            FROM violcode_view) 
+                            WHERE rank <= 4") %>% collect()
+
+
+
+
+###########  7b. Then, search the internet for NYC parking violation code fines. You will find a website (on the nyc.gov URL) that lists these fines. They’re divided into two categories, one for the highest-density locations of the city, the other for the rest of the city. For simplicity, take an average of the two.
+# We will use the data from nyc.gov url to create a table for the fines
+
+# As mentioned before, we will code fine amount of code 36 as 0 as the data is unavailable
+
+# Code    Average Fine
+#  21     55
+#  36     00
+#  38     50
+#  14     115
+
+
+Violation <- c(21,36,38,14)
+Amount <-  c(55,00,50,115)
+
+Fines <- data.frame(cbind(Violation,Amount))
+
+Revenue <- merge(violcode_top4, Fines , by.x ='Violation Code', by.y = 'Violation')
+
+
+###########  7c. Using this information, find the total amount collected for all of the fines. State the code which has the highest total collection.
+
+Revenue$TotalCollected <- Revenue$Frequency * Revenue$Amount
+
+View(Revenue)
+
+
+# Year    Code    Amount Collected
+
+# 2017    14       101,217,480
+#         21        82,521,780
+#         38        52,520,900
+#                   ----------
+#                  236,260,160
+
+
+# 2016    14        98,905,175
+#         21        82,349,795
+#         38        56,341,750
+#                   ----------
+#                  237,596,720
+
+# 2015    14       104,468,070
+#         21        80,807,540
+#         38        65,250,350
