@@ -866,13 +866,3 @@ Violation <- c(21,36,38,14)
 Amount <-  c(55,00,50,115)
 
 Fines <- data.frame(cbind(Violation,Amount))
-
-Revenue <- merge(violcode_top4, Fines , by.x ='Violation Code', by.y = 'Violation')
-
-
-###########  7c. Using this information, find the total amount collected for all of the fines. State the code which has the highest total collection.
-
-Revenue$TotalCollected <- Revenue$Frequency * Revenue$Amount
-
-View(Revenue)
-
