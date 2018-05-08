@@ -876,11 +876,3 @@ Revenue$TotalCollected <- Revenue$Frequency * Revenue$Amount
 
 View(Revenue)
 
-
-# Year    Code    Amount Collected
-
-# 2017    14       101,217,480
-#         21        82,521,780
-#         38        52,520,900
-#                   ----------
-#                  236,260,160
