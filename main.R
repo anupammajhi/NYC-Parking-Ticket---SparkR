@@ -858,11 +858,3 @@ violcode_top4<- SparkR::sql("SELECT `Fiscal Year`,`Violation Code`, Frequency
 # Code    Average Fine
 #  21     55
 #  36     00
-#  38     50
-#  14     115
-
-
-Violation <- c(21,36,38,14)
-Amount <-  c(55,00,50,115)
-
-Fines <- data.frame(cbind(Violation,Amount))
